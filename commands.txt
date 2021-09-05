@@ -1,0 +1,106 @@
+## Liste de commandes
+docker run  -p 8080:8080 -p 50000:50000 --name jenkins -d -v jenkins_home:/var/jenkins_home jenkins/jenkins:lts-jdk11
+
+
+ef gv
+
+pipeline {
+    agent any
+    parameters {
+        choice(name: 'VERSION', choices: ['1.1.0', '1.2.0', '1.3.0'], description: '')
+        booleanParam(name: 'executeTests', defaultValue: true, description: '')
+    }
+    stages {
+        stage("init") {
+            steps {
+                script {
+                   gv = load "script.groovy"
+                }
+            }
+        }
+        stage("build") {
+            steps {
+                script {
+                    gv.buildApp()
+                }
+            }
+        }
+        stage("test") {
+            when {
+                expression {
+                    params.executeTests
+                }
+            }
+            steps {
+                script {
+                    gv.testApp()
+                }
+            }
+        }
+        stage("deploy") {
+            steps {
+                script {
+                    gv.deployApp()
+                }
+            }
+        }
+    }
+}
+
+
+
+
+CODE_CHANGES = getGitChanges()
+
+pipeline {
+
+    agent any
+
+    stages {
+        stage("build") {
+            when {
+                expression {
+                    BRANCH_NAME == 'dev' || CODE_CHANGES == true
+                }
+            }
+            steps {
+                echo 'building the application ...'
+                echo 'Application build ...'
+            }
+        }
+
+        stage("test") {
+            when {
+                expression {
+                    BRANCH_NAME == 'dev' || BRANCH_NAME == 'master'
+                }
+            }
+            steps {
+                echo 'testing the application ...'
+            }
+        }
+
+        stage("deploy") {
+
+            steps {
+                echo 'deploying the application ...'
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'always'
+        }
+
+        success {
+            echo 'success'
+        }
+
+        failure {
+            echo 'failure'
+        }
+    }
+}
+
+
