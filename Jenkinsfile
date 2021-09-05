@@ -5,12 +5,25 @@ pipeline {
         pollSCM '* * * * *'
     }
 
+    tools {
+    maven 'Maven 3.8.2'
+    jdk 'jdk11'
+    }
+
     stages {
+
+        stage('Init') {
+                    steps {
+                        sh '''
+                            echo "PATH = ${PATH}"
+                            echo "M2_HOME = ${M2_HOME}"
+                           '''
+                   }
+                }
+
         stage('Build') {
             steps {
-                def mvnHome = tool name: 'maven-3', type: 'maven'
-                def mvnCMD = "${mvnHome}/bin/mvn"
-                sh "${mvnCMD} clean install"
+              sh 'mvn clean install'
            }
         }
 
